@@ -10,7 +10,7 @@ This project is to create a Docker image for run Chrome in a AWS Lambda function
 
 ### Run
 
-    docker run -p 9000:8080 --user apps --privileged chromepythonawslambda:latest
+    docker run -p 9000:8080 chromepythonawslambda:latest
 
 ### Test it
 
