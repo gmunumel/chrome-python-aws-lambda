@@ -53,27 +53,6 @@ launch_window_manager() {
 
 main
 
-#exec /usr/bin/python3 -m awslambdaric $1
-
-#if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then 
-#  exec /usr/local/bin/aws-lambda-rie /usr/bin/npx aws-lambda-ric $1
-#else
-#  exec /usr/bin/npx aws-lambda-ric $1
-#fi
-
-#if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then 
-#  exec /usr/local/bin/aws-lambda-rie /usr/bin/npx aws-lambda-ric $1
-#else
-#  exec /usr/bin/python3 -m awslambdaric $1
-#fi
-
-# Start the Lambda Runtime Interface Emulator if AWS_LAMBDA_RUNTIME_API is not set
-# if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then 
-#   exec /usr/local/bin/aws-lambda-rie /usr/bin/npx aws-lambda-ric $1
-# else
-#   exec /usr/bin/npx aws-lambda-ric $1
-# fi
-
 if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then
   exec /usr/local/bin/aws-lambda-rie /usr/bin/python3 -m awslambdaric $1
 else
