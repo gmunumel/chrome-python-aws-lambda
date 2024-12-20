@@ -1,6 +1,6 @@
 #!/bin/sh
 
-Based on: https://medium.com/dot-debug/running-chrome-in-a-docker-container-a55e7f4da4a8
+# Based on: https://medium.com/dot-debug/running-chrome-in-a-docker-container-a55e7f4da4a8
 
 readonly G_LOG_I='[INFO]'
 readonly G_LOG_W='[WARN]'
