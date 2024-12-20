@@ -1,0 +1,94 @@
+# Define custom function directory
+ARG FUNCTION_DIR="/function"
+
+####################
+# Stage 1 - Install Ubuntu and other stuff
+####################
+FROM ubuntu:noble
+ARG FUNCTION_DIR
+
+RUN apt-get update; apt-get clean
+
+# Add a user for running applications.
+RUN useradd apps
+RUN mkdir -p /home/apps && chown apps:apps /home/apps
+
+# Install xvfb and other stuff.
+RUN apt-get install -y xvfb fluxbox wget wmctrl gnupg2 software-properties-common
+
+# Set the Chrome repo.
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+
+# Install Chrome.
+RUN apt-get update && apt-get -y install google-chrome-stable
+
+####################
+# Stage 2 - Install AWS Lambda Python Runtime Interface Client
+####################
+#FROM public.ecr.aws/docker/library/python:buster AS build-image
+
+# Include global arg in this stage of the build
+#ARG FUNCTION_DIR
+
+# Add python3.11 repository for Ubuntu 24.04
+RUN add-apt-repository ppa:deadsnakes/ppa
+
+# Install aws-lambda-cpp build dependencies
+RUN apt-get update && \
+  apt-get install -y \
+  g++ \
+  make \
+  cmake \
+  unzip \
+  libcurl4-openssl-dev
+
+# Install Python
+RUN apt-get install -y \
+  python3.11 \
+  python3-pip
+
+
+# install NodeJS
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt install -y nodejs npm
+
+# Install rick
+RUN npm i aws-lambda-ric
+#RUN npm i -g npx
+
+# Copy function code
+RUN mkdir -p ${FUNCTION_DIR}
+COPY app/* ${FUNCTION_DIR}
+
+# Install the function's dependencies
+RUN pip install \
+    --target ${FUNCTION_DIR} \
+        awslambdaric
+
+
+#FROM public.ecr.aws/docker/library/python:buster
+
+# Include global arg in this stage of the build
+#ARG FUNCTION_DIR
+# Set working directory to function root directory
+WORKDIR ${FUNCTION_DIR}
+
+# Copy in the built dependencies
+#COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
+COPY ${FUNCTION_DIR} ${FUNCTION_DIR}
+
+###################
+# Stage 3 - # Add Lambda Runtime Interface Emulator and use a script in the ENTRYPOINT for simpler local runs
+###################
+ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/local/bin/aws-lambda-rie
+RUN chmod 755 /usr/local/bin/aws-lambda-rie
+COPY bootstrap.sh /
+RUN chmod 755 /bootstrap.sh
+ENTRYPOINT [ "/bootstrap.sh" ]
+
+#ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
+
+CMD [ "app.handler" ]
+
+
